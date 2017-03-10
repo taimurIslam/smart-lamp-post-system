@@ -1,0 +1,352 @@
+<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.0//EN" "http://www.wapforum.org/DTD/xhtml-mobile10.dtd\">
+<!-- saved from url=(0044)http://getbootstrap.com/examples/dashboard/# -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="http://getbootstrap.com/favicon.ico">
+	<link rel="stylesheet" href="./Files/on-off-design.css">
+
+    <title>Smart Lamp Post System</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./Files/bootstrap.min.css" rel="stylesheet">
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <link href="./Files/ie10-viewport-bug-workaround.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="./Files/dashboard.css" rel="stylesheet">
+
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    <script src="./Files/ie-emulation-modes-warning.js.download"></script>
+	<script src="https://cdn.socket.io/socket.io-1.3.5.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+	<script src="socket.io.min.js"></script>
+	<script src="jquery-2.1.0.min.js"></script>
+	
+	<script>
+	
+
+
+	function LedOnOff(){
+     
+       if($("#myonoffswitch").is(':checked')){
+	             socket.emit('publish', {topic:"zone-1",payload:"on"}); 
+
+        } else {
+			       socket.emit('publish', {topic:"zone-1",payload:"off"});
+   
+             }
+	
+	}
+	
+   </script>     
+    <script>
+	var socket = io.connect('http://192.168.4.17:5000'); // change the ip address with server IP address
+	var lamp_status="Total Lamp:4";
+	var lamp_damaged="OFF State:";
+	var lamp_okay="ON State: 1 2 3 4";
+	var lamp1_check=0;
+	var lamp2_check=0;
+	var lamp3_check=0;
+	var lamp4_check=0;
+	var lamp5_check=0;
+	socket.on('connect', function () {
+		socket.on('mqtt', function (msg) {
+		  console.log(msg.topic+' '+msg.payload);
+		  
+		  
+if(msg.topic=="zone-1-status")
+              {
+				if (msg.payload == "off") {
+					if ($('#myonoffswitch').is(':checked')) {
+						$('#myonoffswitch').prop('checked',false).change();
+						}
+						$('#img1').attr('src', 'data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mPcq8h+AwAERwG/1ZOpRQAAAABJRU5ErkJggg==');
+					}
+				if (msg.payload == "on") {
+				
+					if (!$('#myonoffswitch').is(':checked')) {
+					$('#myonoffswitch').prop('checked',true).change();
+					}
+					$('#img1').attr('src', 'data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mPk2st+AwADTwGo1/dXOgAAAABJRU5ErkJggg==');
+				}
+		}
+if(msg.topic=="lamp1")
+              {
+				if (msg.payload == "damaged" && lamp1_check==0) {
+				
+						lamp_damaged+=" 1"
+						lamp_okay = lamp_okay.split('1').join("");
+						lamp1_check=1;
+					}
+			 if (msg.payload == "okay" && lamp1_check==1) {
+				
+						lamp_okay+=" 1"
+						lamp_damaged = lamp_damaged.split('1').join("");
+						lamp1_check=0;
+					}
+				
+		}
+		
+if(msg.topic=="lamp2")
+              {
+				if (msg.payload == "damaged" && lamp2_check==0) {
+				
+						lamp_damaged+=" 2"
+						lamp_okay = lamp_okay.split(' 2').join("");
+						lamp2_check=1;
+					}
+			   if (msg.payload == "okay" && lamp2_check==1) {
+				
+						lamp_okay+=" 2"
+						lamp_damaged = lamp_damaged.split(' 2').join("");
+						lamp2_check=0;
+					}
+				
+		}
+		
+if(msg.topic=="lamp3")
+              {
+				if (msg.payload == "damaged" && lamp3_check==0) {
+				
+						lamp_damaged+=" 3"
+						lamp_okay = lamp_okay.split(' 3').join("");
+						lamp3_check=1;
+					}
+			  if (msg.payload == "okay" && lamp3_check==1) {
+				
+						lamp_okay+=" 3"
+						lamp_damaged = lamp_damaged.split(' 3').join("");
+						lamp3_check=0;
+					}
+				
+		}
+	
+if(msg.topic=="lamp4")
+              {
+				if (msg.payload == "damaged" && lamp4_check==0) {
+				
+						lamp_damaged+=" 4"
+						lamp_okay = lamp_okay.split(' 4').join("");
+						lamp4_check=1;
+					}
+				if (msg.payload == "okay" && lamp4_check==1) {
+				
+						lamp_okay+=" 4"
+						lamp_damaged = lamp_damaged.split(' 4').join("");
+						lamp4_check=0;
+					}
+				
+		}
+		
+/*if(msg.topic=="lamp5")
+              {
+				if (msg.payload == "damaged" && lamp5_check==0) {
+				
+						lamp_damaged+=" 5"
+						lamp_okay = lamp_okay.split(' 5').join("");
+						lamp5_check=1;
+					}
+				
+		}*/
+		var obj = $(".zone-1").text(lamp_status +  '\n' +  lamp_damaged +  '\n' +  lamp_okay);
+		obj.html(obj.html().replace(/\n/g,'<br/>'));
+		
+});
+		socket.emit('subscribe',{topic:'zone-1'});
+		socket.emit('subscribe',{topic:'zone-1-status'});
+		socket.emit('subscribe',{topic:'lamp1'});
+		socket.emit('subscribe',{topic:'lamp2'});
+		socket.emit('subscribe',{topic:'lamp3'});
+		socket.emit('subscribe',{topic:'lamp4'});
+		socket.emit('subscribe',{topic:'lamp5'});
+	});
+	</script>
+	
+	<script>
+	
+	    $("#myonoffswitch1").change(function(){
+       if($("#myonoffswitch1").is(':checked')){
+                 $('#img2').attr('src', 'data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mPk2st+AwADTwGo1/dXOgAAAABJRU5ErkJggg==');
+                //alert("The text has been changed.");
+        } else {
+                  $('#img2').attr('src', 'data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mPcq8h+AwAERwG/1ZOpRQAAAABJRU5ErkJggg==');    
+                  //alert("The text hasn't been changed.");
+             }
+        
+    });
+	
+	
+	    $("#myonoffswitch2").change(function(){
+       if($("#myonoffswitch2").is(':checked')){
+                 $('#img3').attr('src', 'data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mPk2st+AwADTwGo1/dXOgAAAABJRU5ErkJggg==');
+                //alert("The text has been changed.");
+        } else {
+                  $('#img3').attr('src', 'data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mPcq8h+AwAERwG/1ZOpRQAAAABJRU5ErkJggg==');    
+                  //alert("The text hasn't been changed.");
+             }
+        
+    });
+	
+	    $("#myonoffswitch3").change(function(){
+       if($("#myonoffswitch3").is(':checked')){
+                 $('#img4').attr('src', 'data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mPk2st+AwADTwGo1/dXOgAAAABJRU5ErkJggg==');
+                //alert("The text has been changed.");
+        } else {
+                  $('#img4').attr('src', 'data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mPcq8h+AwAERwG/1ZOpRQAAAABJRU5ErkJggg==');    
+                  //alert("The text hasn't been changed.");
+             }
+        
+    });
+
+</script>
+
+	
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="http://getbootstrap.com/examples/dashboard/#">Smart Lamp Post System</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="http://getbootstrap.com/examples/dashboard/#">Dashboard</a></li>
+            <li><a href="http://getbootstrap.com/examples/dashboard/#">Settings</a></li>
+            <li><a href="http://getbootstrap.com/examples/dashboard/#">Profile</a></li>
+            <li><a href="http://getbootstrap.com/examples/dashboard/#">Help</a></li>
+          </ul>
+          <form class="navbar-form navbar-right">
+            <input type="text" class="form-control" placeholder="Search...">
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li class="active"><a href="http://getbootstrap.com/examples/dashboard/#">Overview <span class="sr-only">(current)</span></a></li>
+            <li><a href="http://getbootstrap.com/examples/dashboard/#">Statistics</a></li>
+
+          </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <h1 class="page-header">CENTRAL CONTROL</h1>
+
+          <div class="row placeholders">
+            <div class="col-xs-6 col-sm-3 placeholder">
+              <div class="image_write"> 
+				<img src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mPcq8h+AwAERwG/1ZOpRQAAAABJRU5ErkJggg==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail" id="img1">
+				<p class="zone-1">Total Lamp:4<br />On State:y<br />Off tate:z</p>
+			  </div>
+              <h4>Zone-1</h4>
+              <span class="text-muted">
+			     <center>
+				     <div class="onoffswitch">
+						<input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" onclick="LedOnOff()">
+						<label class="onoffswitch-label" for="myonoffswitch">
+							<span class="onoffswitch-inner"></span>
+							<span class="onoffswitch-switch"></span>
+						</label>
+					</div> 	
+				 </center
+					
+			  </span>
+            </div>
+            <div class="col-xs-6 col-sm-3 placeholder">
+              <div class="image_write"> 
+				<img id="img2" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mPcq8h+AwAERwG/1ZOpRQAAAABJRU5ErkJggg==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
+				<p>Total Lamp:x<br />On State:y<br />Off tate:z</p>
+			  </div>
+              <h4>Zone-2</h4>
+              <span class="text-muted">
+			    <center>
+				     <div class="onoffswitch">
+						<input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch1" ">
+						<label class="onoffswitch-label" for="myonoffswitch1">
+							<span class="onoffswitch-inner"></span>
+							<span class="onoffswitch-switch"></span>
+						</label>
+					</div> 	
+				 </center
+			  </span>
+            </div>
+            <div class="col-xs-6 col-sm-3 placeholder">
+			 <div class="image_write"> 
+              <img id="img3" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mPcq8h+AwAERwG/1ZOpRQAAAABJRU5ErkJggg==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
+			  <p>Total Lamp:x<br />On State:y<br />Off tate:z</p>
+			  </div>
+              <h4>Zone-3</h4>
+              <span class="text-muted">
+				<center>
+				     <div class="onoffswitch">
+						<input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch2" >
+						<label class="onoffswitch-label" for="myonoffswitch2">
+							<span class="onoffswitch-inner"></span>
+							<span class="onoffswitch-switch"></span>
+						</label>
+					</div> 	
+				 </center
+			  </span>
+            </div>
+            <div class="col-xs-6 col-sm-3 placeholder">
+              <div class="image_write"> 
+				<img id="img4" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mPcq8h+AwAERwG/1ZOpRQAAAABJRU5ErkJggg==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
+				<p>Total Lamp:x<br />On State:y<br />Off tate:z</p>
+			  </div>
+              <h4>Zone-4</h4>
+              <span class="text-muted">
+				<center>
+				     <div class="onoffswitch">
+						<input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch3" >
+						<label class="onoffswitch-label" for="myonoffswitch3">
+							<span class="onoffswitch-inner"></span>
+							<span class="onoffswitch-switch"></span>
+						</label>
+					</div> 	
+				 </center
+			  </span>
+            </div>
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="./Files/jquery.min.js.download"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="./Files/bootstrap.min.js.download"></script>
+    <!-- Just to make our placeholder images work. Don't actually copy the next line! -->
+    <script src="./Files/holder.min.js.download"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="./Files/ie10-viewport-bug-workaround.js.download"></script>
+  
+
+	
+</body></html>
